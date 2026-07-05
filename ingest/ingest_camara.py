@@ -75,6 +75,9 @@ def get_json(url, params=None, throttle=0.25, retries=6):
             if r.status_code in (500, 502, 503, 504):  # servidor instável
                 time.sleep(3 * (attempt + 1))
                 continue
+            if r.status_code == 404:            # recurso ausente p/ esta votação
+                print(f"[skip 404] {url}", file=sys.stderr)  # ex.: votação sem /votos
+                return {}
             r.raise_for_status()
             time.sleep(throttle)                # gentileza com a API
             return r.json()
@@ -367,21 +370,25 @@ def main():
         db = DB(dsn)
         cur = db.conn.cursor()
 
-    n = 0
+    n = skipped = 0
     try:
         for v in iter_votacoes(start, end, plen_only=args.plen_only, limit=args.limit):
-            process_division(v, db, cur, args.dry_run)
-            n += 1
-            if db and n % 25 == 0:
-                db.conn.commit()
-        if db:
-            db.conn.commit()
+            try:
+                process_division(v, db, cur, args.dry_run)
+                if db:
+                    db.conn.commit()     # commit por votação: uma falha não perde o resto
+                n += 1
+            except Exception as e:       # noqa: BLE001 — resiliência de lote
+                if db:
+                    db.conn.rollback()   # descarta a transação parcial e segue
+                skipped += 1
+                print(f"[pulada votacao {v.get('id')}] {e}", file=sys.stderr)
     finally:
         if db:
             db.close()
 
-    print(f"\nConcluído: {n} votação(ões) processada(s) "
-          f"({'dry-run' if args.dry_run else 'gravadas no banco'}).")
+    print(f"\nConcluído: {n} votação(ões) gravada(s), {skipped} pulada(s) "
+          f"({'dry-run' if args.dry_run else 'banco'}).")
 
 
 if __name__ == "__main__":
