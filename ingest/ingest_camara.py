@@ -32,7 +32,7 @@ import argparse
 import os
 import sys
 import time
-from datetime import date
+from datetime import datetime, timedelta
 
 import requests
 
@@ -64,47 +64,62 @@ session.headers.update({"Accept": "application/json",
 # ---------------------------------------------------------------------------
 #  HTTP com throttle + retry
 # ---------------------------------------------------------------------------
-def get_json(url, params=None, throttle=0.25, retries=4):
-    """GET com backoff exponencial. Retorna o dict JSON."""
+def get_json(url, params=None, throttle=0.25, retries=6):
+    """GET com backoff exponencial. Tolera timeouts/instabilidade da API."""
     for attempt in range(retries):
         try:
-            r = session.get(url, params=params, timeout=30)
+            r = session.get(url, params=params, timeout=90)
             if r.status_code == 429:            # rate limited
                 time.sleep(2 * (attempt + 1))
+                continue
+            if r.status_code in (500, 502, 503, 504):  # servidor instável
+                time.sleep(3 * (attempt + 1))
                 continue
             r.raise_for_status()
             time.sleep(throttle)                # gentileza com a API
             return r.json()
-        except (requests.RequestException, ValueError) as e:
+        except (requests.RequestException, ValueError):
             if attempt == retries - 1:
                 raise
-            time.sleep(1.5 * (attempt + 1))
+            time.sleep(3 * (attempt + 1))       # espera crescente (até ~15s)
     return {}
 
 
+def month_chunks(start, end):
+    """Divide [start, end] em janelas de ~1 mês (evita 1 query gigante)."""
+    d0 = datetime.strptime(start, "%Y-%m-%d").date()
+    d1 = datetime.strptime(end, "%Y-%m-%d").date()
+    cur = d0
+    while cur <= d1:
+        nxt = min(cur + timedelta(days=30), d1)
+        yield cur.isoformat(), nxt.isoformat()
+        cur = nxt + timedelta(days=1)
+
+
 def iter_votacoes(start, end, plen_only=False, limit=None):
-    """Itera as votações do período, paginando via links 'next'."""
-    params = {
-        "dataInicio": start,
-        "dataFim": end,
-        "ordem": "ASC",
-        "ordenarPor": "dataHoraRegistro",
-        "itens": 100,
-    }
-    url = f"{API}/votacoes"
+    """Itera as votações do período, em janelas mensais e paginando via 'next'."""
     seen = 0
-    while url:
-        payload = get_json(url, params=params)
-        params = None                            # o link 'next' já traz a query
-        for v in payload.get("dados", []):
-            if plen_only and v.get("siglaOrgao") != "PLEN":
-                continue
-            yield v
-            seen += 1
-            if limit and seen >= limit:
-                return
-        url = next((l["href"] for l in payload.get("links", [])
-                    if l.get("rel") == "next"), None)
+    for a, b in month_chunks(start, end):
+        params = {
+            "dataInicio": a,
+            "dataFim": b,
+            "ordem": "ASC",
+            "ordenarPor": "dataHoraRegistro",
+            "itens": 100,
+        }
+        url = f"{API}/votacoes"
+        while url:
+            payload = get_json(url, params=params)
+            params = None                        # o link 'next' já traz a query
+            for v in payload.get("dados", []):
+                if plen_only and v.get("siglaOrgao") != "PLEN":
+                    continue
+                yield v
+                seen += 1
+                if limit and seen >= limit:
+                    return
+            url = next((l["href"] for l in payload.get("links", [])
+                        if l.get("rel") == "next"), None)
 
 
 def fetch_votos(vote_id):
