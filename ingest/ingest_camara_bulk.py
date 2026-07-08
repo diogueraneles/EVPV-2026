@@ -46,7 +46,8 @@ def download_dados(nome, ano, retries=5):
     url = f"{BASE}/{nome}/json/{nome}-{ano}.json"
     for attempt in range(retries):
         try:
-            r = session.get(url, timeout=600)      # arquivos podem ser grandes
+            # (connect=30, read=180): pega travamento sem falso-positivo em download lento
+            r = session.get(url, timeout=(30, 180))
             if r.status_code == 404:
                 print(f"  (sem arquivo {nome}-{ano})", file=sys.stderr)
                 return []
@@ -89,16 +90,20 @@ def norm_person(v):
 
 
 def tally_by_party(votos):
-    t = defaultdict(lambda: {"sim": 0, "nao": 0, "abstencao": 0,
-                             "obstrucao": 0, "ausente": 0, "outro": 0})
+    # inner defaultdict(int) aceita QUALQUER opção (sim/nao/.../artigo17/outro)
+    # sem KeyError.
+    t = defaultdict(lambda: defaultdict(int))
     for p in votos:
         if p["party_sigla"]:
             t[p["party_sigla"]][p["option"]] += 1
     out = {}
     for sig, c in t.items():
-        countable = {k: c[k] for k in ("sim", "nao", "abstencao", "obstrucao")}
-        c["majority_option"] = max(countable, key=countable.get) if any(countable.values()) else None
-        out[sig] = c
+        countable = {k: c.get(k, 0) for k in ("sim", "nao", "abstencao", "obstrucao")}
+        maj = max(countable, key=countable.get) if any(countable.values()) else None
+        out[sig] = {"sim": c.get("sim", 0), "nao": c.get("nao", 0),
+                    "abstencao": c.get("abstencao", 0),
+                    "obstrucao": c.get("obstrucao", 0),
+                    "ausente": c.get("ausente", 0), "majority_option": maj}
     return out
 
 
@@ -186,7 +191,7 @@ class DB:
 #  Processamento de um ano
 # ---------------------------------------------------------------------------
 def process_year(ano, db):
-    print(f"Ano {ano}: baixando arquivos...")
+    print(f"Ano {ano}: baixando arquivos...", flush=True)
     votos_raw = download_dados("votacoesVotos", ano)
     orient_raw = download_dados("votacoesOrientacoes", ano)
     votacoes = download_dados("votacoes", ano)
@@ -201,7 +206,8 @@ def process_year(ano, db):
         orient_by[o.get("idVotacao")].append(o)
     meta_by = {vt["id"]: vt for vt in votacoes}
 
-    print(f"Ano {ano}: {len(votos_by)} votações nominais (de {len(votacoes)} no arquivo).")
+    print(f"Ano {ano}: {len(votos_by)} votações nominais "
+          f"(de {len(votacoes)} no arquivo).", flush=True)
 
     cur = db.conn.cursor()
     n = skipped = 0
@@ -231,7 +237,7 @@ def process_year(ano, db):
             skipped += 1
             print(f"[pulada {vid}] {e}", file=sys.stderr)
     cur.close()
-    print(f"Ano {ano}: {n} votações gravadas, {skipped} puladas.")
+    print(f"Ano {ano}: {n} votações gravadas, {skipped} puladas.", flush=True)
     return n
 
 
@@ -248,10 +254,14 @@ def main():
     total = 0
     try:
         for ano in args.years:
-            total += process_year(ano, db)
+            try:
+                total += process_year(ano, db)
+            except Exception as e:        # noqa: BLE001 — um ano ruim não derruba os outros
+                print(f"[ano {ano} falhou] {e}", file=sys.stderr)
     finally:
         db.close()
-    print(f"\nConcluído: {total} votações nominais gravadas em {len(args.years)} ano(s).")
+    print(f"\nConcluído: {total} votações nominais gravadas em {len(args.years)} ano(s).",
+          flush=True)
 
 
 if __name__ == "__main__":
