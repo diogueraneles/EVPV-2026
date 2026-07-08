@@ -17,6 +17,7 @@ concurrency:
 jobs:
   backfill:
     runs-on: ubuntu-latest
+    timeout-minutes: 60          # falha rapido em vez de queimar 6h
     steps:
       - uses: actions/checkout@v4
 
