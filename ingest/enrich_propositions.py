@@ -100,13 +100,10 @@ def main():
 
     done = skipped = seen = 0
     with concurrent.futures.ThreadPoolExecutor(max_workers=WORKERS) as pool:
-        for i in range(0, len(exts), BATCH):
-            chunk = exts[i:i + BATCH]
-            for ext, prop in pool.map(fetch_one, chunk):
-                seen += 1
-                if not prop or not prop.get("id"):
-                    skipped += 1
-                    continue
+        # pool.map transmite os resultados na ordem, conforme cada um fica pronto
+        for ext, prop in pool.map(fetch_one, exts):
+            seen += 1
+            if prop and prop.get("id"):
                 try:
                     cur.execute(
                         """INSERT INTO proposition (house, external_id, sigla, numero, ano, ementa)
@@ -129,9 +126,14 @@ def main():
                     conn.rollback()
                     skipped += 1
                     print(f"[skip {ext}] {e}", file=sys.stderr)
-                    continue
-            conn.commit()
-            print(f"  {seen}/{len(exts)} processadas ({done} com assunto)...", flush=True)
+            else:
+                skipped += 1
+
+            if seen % 100 == 0:               # grava e mostra progresso com frequência
+                conn.commit()
+            if seen % 25 == 0:                # progresso visível desde os 1ºs segundos
+                print(f"  {seen}/{len(exts)} processadas ({done} com assunto)...", flush=True)
+    conn.commit()
 
     conn.close()
     print(f"\nConcluído: {done} votação(ões) com assunto; {skipped} sem/erro.", flush=True)
