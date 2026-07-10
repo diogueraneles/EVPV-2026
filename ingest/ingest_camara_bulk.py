@@ -37,11 +37,11 @@ session.headers.update({"User-Agent": "ElesVotamPorVoce/0.1 (bulk)"})
 # ---------------------------------------------------------------------------
 #  Download dos arquivos anuais — com retry
 # ---------------------------------------------------------------------------
-def download_dados(nome, ano, retries=5):
+def download_dados(nome, ano, retries=8):
     url = f"{BASE}/{nome}/json/{nome}-{ano}.json"
     for attempt in range(retries):
         try:
-            r = session.get(url, timeout=(30, 180))
+            r = session.get(url, timeout=(30, 240))     # arquivos grandes/lentos
             if r.status_code == 404:
                 print(f"  (sem arquivo {nome}-{ano})", file=sys.stderr)
                 return []
@@ -49,7 +49,9 @@ def download_dados(nome, ano, retries=5):
             return r.json().get("dados", [])
         except (requests.RequestException, ValueError) as e:
             if attempt == retries - 1:
-                raise
+                # não derruba o ano: devolve vazio e segue (re-rodar completa)
+                print(f"  [falha {nome}-{ano} apos {retries} tentativas] {e}", file=sys.stderr)
+                return []
             print(f"  retry {nome}-{ano} ({e})", file=sys.stderr)
             time.sleep(5 * (attempt + 1))
     return []

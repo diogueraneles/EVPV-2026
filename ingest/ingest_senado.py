@@ -55,24 +55,29 @@ session.headers.update({"Accept": "application/json",
 # ---------------------------------------------------------------------------
 #  HTTP com throttle + retry (limite do Senado: >10 req/s -> HTTP 429)
 # ---------------------------------------------------------------------------
-def get_json(url, params=None, throttle=0.3, retries=4):
+def get_json(url, params=None, throttle=0.3, retries=6):
     for attempt in range(retries):
         try:
-            r = session.get(url, params=params, timeout=45)
+            r = session.get(url, params=params, timeout=60)
             if r.status_code == 429:
-                time.sleep(2 * (attempt + 1))
+                time.sleep(3 * (attempt + 1))
                 continue
             if r.status_code == 404:
                 return []
+            if r.status_code in (500, 502, 503, 504):   # servidor instável
+                time.sleep(3 * (attempt + 1))
+                continue
             r.raise_for_status()
             time.sleep(throttle)
             if not r.text.strip():
                 return []
             return r.json()
-        except (requests.RequestException, ValueError):
+        except (requests.RequestException, ValueError) as e:
             if attempt == retries - 1:
-                raise
-            time.sleep(1.5 * (attempt + 1))
+                # NÃO derruba o job: pula este pedaço e segue
+                print(f"[senado: pulado {params or url}] {e}", file=sys.stderr)
+                return []
+            time.sleep(3 * (attempt + 1))
     return []
 
 
