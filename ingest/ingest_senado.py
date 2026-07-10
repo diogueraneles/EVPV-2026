@@ -175,22 +175,35 @@ class DB:
         import psycopg2
         self.conn = psycopg2.connect(dsn)
         self.conn.autocommit = False
+        self.party_cache = {}    # sigla -> id
+        self.person_cache = {}   # external_id -> id
 
     def close(self):
         self.conn.close()
 
+    def clear_cache(self):
+        self.party_cache.clear()
+        self.person_cache.clear()
+
     def upsert_party(self, cur, sigla):
         if not sigla:
             return None
+        if sigla in self.party_cache:
+            return self.party_cache[sigla]
         cur.execute(
             """INSERT INTO party (sigla) VALUES (%s)
                ON CONFLICT (sigla) DO UPDATE SET sigla = EXCLUDED.sigla
                RETURNING id""",
             (sigla,),
         )
-        return cur.fetchone()[0]
+        pid = cur.fetchone()[0]
+        self.party_cache[sigla] = pid
+        return pid
 
     def upsert_person(self, cur, p):
+        ext = p["person_external_id"]
+        if ext in self.person_cache:
+            return self.person_cache[ext]
         cur.execute(
             """INSERT INTO person (house, external_id, name, uf)
                VALUES ('senado', %s, %s, %s)
@@ -199,7 +212,9 @@ class DB:
                RETURNING id""",
             (p["person_external_id"], p["name"], p["uf"]),
         )
-        return cur.fetchone()[0]
+        pid = cur.fetchone()[0]
+        self.person_cache[ext] = pid
+        return pid
 
     def upsert_proposition(self, cur, d):
         if not d["prop_external_id"] and not d["prop_label"]:
@@ -236,30 +251,31 @@ class DB:
         )
         return cur.fetchone()[0]
 
-    def upsert_vote(self, cur, division_id, person_id, party_id, opt):
-        cur.execute(
+    def votes_bulk(self, cur, rows):
+        if not rows:
+            return
+        from psycopg2.extras import execute_values
+        execute_values(cur,
             """INSERT INTO vote (division_id, person_id, party_id, option)
-               VALUES (%s, %s, %s, %s)
+               VALUES %s
                ON CONFLICT (division_id, person_id) DO UPDATE
-                 SET party_id = EXCLUDED.party_id, option = EXCLUDED.option""",
-            (division_id, person_id, party_id, opt),
-        )
+                 SET party_id = EXCLUDED.party_id, option = EXCLUDED.option""", rows)
 
-    def upsert_tally(self, cur, division_id, party_id, t):
-        cur.execute(
+    def tally_bulk(self, cur, rows):
+        if not rows:
+            return
+        from psycopg2.extras import execute_values
+        execute_values(cur,
             """INSERT INTO party_vote_tally
                  (division_id, party_id, sim_count, nao_count, abstencao_count,
                   obstrucao_count, ausente_count, majority_option)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+               VALUES %s
                ON CONFLICT (division_id, party_id) DO UPDATE
                  SET sim_count = EXCLUDED.sim_count, nao_count = EXCLUDED.nao_count,
                      abstencao_count = EXCLUDED.abstencao_count,
                      obstrucao_count = EXCLUDED.obstrucao_count,
                      ausente_count = EXCLUDED.ausente_count,
-                     majority_option = EXCLUDED.majority_option""",
-            (division_id, party_id, t["sim"], t["nao"], t["abstencao"],
-             t["obstrucao"], t["ausente"], t["majority_option"]),
-        )
+                     majority_option = EXCLUDED.majority_option""", rows)
 
 
 # ---------------------------------------------------------------------------
@@ -283,13 +299,18 @@ def process_division(v, db, cur, dry_run):
 
     prop_id = db.upsert_proposition(cur, d)
     division_id = db.upsert_division(cur, d, prop_id)
+
+    vote_rows = []
     for p in votos:
-        person_id = db.upsert_person(cur, p)
+        person_id = db.upsert_person(cur, p)          # cacheado
         party_id = db.upsert_party(cur, p["party_sigla"])
-        db.upsert_vote(cur, division_id, person_id, party_id, p["option"])
-    for sigla, t in tallies.items():
-        party_id = db.upsert_party(cur, sigla)
-        db.upsert_tally(cur, division_id, party_id, t)
+        vote_rows.append((division_id, person_id, party_id, p["option"]))
+    db.votes_bulk(cur, vote_rows)                      # em lote
+
+    tally_rows = [(division_id, db.upsert_party(cur, sig), t["sim"], t["nao"],
+                   t["abstencao"], t["obstrucao"], t["ausente"], t["majority_option"])
+                  for sig, t in tallies.items()]
+    db.tally_bulk(cur, tally_rows)
 
 
 def main():
@@ -310,21 +331,28 @@ def main():
         db = DB(dsn)
         cur = db.conn.cursor()
 
-    n = 0
+    n = skipped = 0
     try:
         for v in iter_votacoes(start, end):
-            process_division(v, db, cur, args.dry_run)
-            n += 1
-            if db and n % 25 == 0:
-                db.conn.commit()
-        if db:
-            db.conn.commit()
+            try:
+                process_division(v, db, cur, args.dry_run)
+                if db:
+                    db.conn.commit()          # commit por votação
+                n += 1
+                if n % 50 == 0:
+                    print(f"{n} votações processadas...", flush=True)
+            except Exception as e:            # noqa: BLE001 — uma ruim não derruba o resto
+                if db:
+                    db.conn.rollback()
+                    db.clear_cache()          # evita cache "sujo" após rollback
+                skipped += 1
+                print(f"[pulada] {e}", file=sys.stderr)
     finally:
         if db:
             db.close()
 
-    print(f"\nConcluído: {n} votação(ões) processada(s) "
-          f"({'dry-run' if args.dry_run else 'gravadas no banco'}).")
+    print(f"\nConcluído: {n} votação(ões) gravada(s), {skipped} pulada(s) "
+          f"({'dry-run' if args.dry_run else 'banco'}).", flush=True)
 
 
 if __name__ == "__main__":
