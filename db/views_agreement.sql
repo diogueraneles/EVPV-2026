@@ -1,7 +1,8 @@
 -- Agregação do agreement score POR PARTIDO (usa a filiação ATUAL de cada pessoa).
 -- Roda depois do schema e do score.py:  psql "$DATABASE_URL" -f db/views_agreement.sql
 
-CREATE OR REPLACE VIEW party_agreement AS
+-- security_invoker: a view respeita o RLS de quem consulta (não do criador).
+CREATE OR REPLACE VIEW party_agreement WITH (security_invoker = true) AS
 SELECT
     pm.party_id,
     p.sigla                         AS party_sigla,
