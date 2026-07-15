@@ -1,0 +1,60 @@
+import Link from "next/link";
+import { supabase } from "@/lib/supabase";
+import type { Policy } from "@/lib/types";
+
+export const revalidate = 3600;
+export const metadata = { title: "Temas" };
+
+async function getPolicies(): Promise<Policy[]> {
+  try {
+    const { data } = await supabase
+      .from("policy")
+      .select("id, name, description, provisional")
+      .order("name");
+    return (data ?? []) as Policy[];
+  } catch {
+    return [];
+  }
+}
+
+export default async function PoliticasPage() {
+  const policies = await getPolicies();
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800">Temas</h1>
+        <p className="text-sm text-slate-500">
+          Conjuntos de votações relacionadas, com uma direção clara. A posição de
+          cada parlamentar é a média de como votou nessas votações.
+        </p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        {policies.map((pol) => (
+          <Link
+            key={pol.id}
+            href={`/politicas/${pol.id}`}
+            className="rounded-lg border border-slate-200 bg-white p-5 hover:border-brand-light hover:shadow-sm"
+          >
+            <div className="flex items-center gap-2">
+              <p className="font-semibold text-slate-800">{pol.name}</p>
+              {pol.provisional && (
+                <span className="rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
+                  provisório
+                </span>
+              )}
+            </div>
+            {pol.description && (
+              <p className="mt-2 text-sm text-slate-500">{pol.description}</p>
+            )}
+          </Link>
+        ))}
+      </div>
+
+      {policies.length === 0 && (
+        <p className="text-slate-500">Nenhum tema publicado ainda.</p>
+      )}
+    </div>
+  );
+}

@@ -3,7 +3,7 @@
 --  Modelo unificado para Câmara dos Deputados + Senado Federal.
 --  Suporta: voto por PESSOA, orientação por PARTIDO, placar agregado por
 --  partido, filiação partidária com validade no tempo, e a camada editorial
---  (políticas/temas + agreement scores) no estilo TheyVoteForYou.
+--  (políticas/temas + agreement scores).
 --
 --  Rode com:  psql "$DATABASE_URL" -f db/schema.sql
 --  Idempotente: usa IF NOT EXISTS onde possível.
@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS division (
   occurred_at     TIMESTAMP,
   body            TEXT,                       -- siglaOrgao: 'PLEN', 'CCJC'...
   proposition_id  INTEGER REFERENCES proposition(id),
-  description     TEXT,                       -- resumo (editável, Markdown) — como no TVFY
+  description     TEXT,                       -- resumo (editável, Markdown)
   result_approved BOOLEAN,                    -- Câmara aprovacao / Senado DescricaoResultado
   is_nominal      BOOLEAN NOT NULL DEFAULT FALSE, -- FALSE = simbólica (sem voto individual)
   is_secret       BOOLEAN NOT NULL DEFAULT FALSE,
@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS party_vote_tally (
 );
 
 -- ---------------------------------------------------------------------------
---  Camada editorial + pontuação (estilo TheyVoteForYou)
+--  Camada editorial + pontuação
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS policy (
   id           SERIAL PRIMARY KEY,

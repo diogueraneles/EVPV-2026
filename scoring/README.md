@@ -1,7 +1,7 @@
 # Motor de agreement score
 
 Transforma votos brutos em "votou consistentemente a favor de X" — por pessoa
-e (via view) por partido. É a peça central, no espírito do TheyVoteForYou.
+e (via view) por partido. É a peça central do projeto.
 
 ## Ordem de execução
 
@@ -50,9 +50,9 @@ contra", mais "sem dados suficientes").
 
 Os pesos e limiares são **nossos, explícitos e ajustáveis** (constantes no topo
 do `score.py`): `WEIGHT`, `ABSENCE_FACTOR`, `ABSENCE_CREDIT`, `MIN_ATTENDED` e os
-cortes de categoria. A abordagem é **inspirada** no Public Whip/TVFY, mas **não é
-uma réplica bit-a-bit** do algoritmo deles. Para paridade exata com o
-TheyVoteForYou, é preciso portar e conferir a implementação open-source deles.
+cortes de categoria. Eles são calibrados para o Congresso brasileiro e **não são
+portados de nenhuma implementação externa** — mexer nas constantes muda a
+metodologia, e a mudança precisa ser documentada.
 O importante para a confiança do projeto: a metodologia é transparente e
 auditável — documente-a publicamente e mostre as votações por trás de cada score.
 

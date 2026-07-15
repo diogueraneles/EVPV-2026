@@ -9,9 +9,9 @@ isso por partido.
 
 METODOLOGIA (transparente e AJUSTÁVEL — veja as constantes abaixo)
 -----------------------------------------------------------------
-Inspirada no método do Public Whip / TheyVoteForYou, mas com pesos e limiares
-NOSSOS, explícitos e configuráveis. NÃO é uma cópia bit-a-bit do algoritmo do
-TVFY — para paridade exata, porte a implementação open-source deles e confira.
+Os pesos e limiares são NOSSOS, explícitos e configuráveis — calibrados para o
+Congresso brasileiro. Não são portados de nenhuma implementação externa: se
+mudar as constantes abaixo, a metodologia muda junto (e deve ser documentada).
 
 Para cada votação (division) ligada à política:
   - a política define uma POSTURA (`stance`): 'for' = votar SIM apoia a política;
@@ -43,16 +43,16 @@ MIN_ATTENDED = 2                         # menos que isso -> 'sem dados suficien
 # é tratado como não-decisivo ("absent")
 DECISIVE = {"sim", "nao"}
 
-# limiares score->categoria (0..100). Ajustáveis; espelham os 8 rótulos do TVFY.
+# limiares score->categoria (0..100). Ajustáveis; definem os 8 rótulos exibidos.
 CATEGORY_LABELS = {
-    "for3":      "votou consistentemente a favor",
-    "for2":      "votou quase sempre a favor",
-    "for1":      "votou geralmente a favor",
-    "mixture":   "votou uma mistura de a favor e contra",
-    "against1":  "votou geralmente contra",
-    "against2":  "votou quase sempre contra",
-    "against3":  "votou consistentemente contra",
-    "not_enough": "sem votos suficientes para uma conclusão",
+    "for3":      "Sempre a favor",
+    "for2":      "Quase sempre a favor",
+    "for1":      "Geralmente a favor",
+    "mixture":   "Às vezes",
+    "against1":  "Geralmente contra",
+    "against2":  "Quase sempre contra",
+    "against3":  "Sempre contra",
+    "not_enough": "Sem votos suficientes",
 }
 
 

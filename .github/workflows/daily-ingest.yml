@@ -1,7 +1,10 @@
 name: Ingestão diária — Câmara + Senado
 
+# Cria/garante o schema, carrega as duas casas, deriva filiações e recalcula os
+# scores. Roda diariamente e também sob demanda (com datas opcionais).
 on:
   schedule:
+    # 14:00 UTC ~ 11:00 no horário de Brasília. Cron do GitHub é sempre em UTC.
     - cron: "0 14 * * *"
   workflow_dispatch:
     inputs:
@@ -48,6 +51,7 @@ jobs:
           set -euo pipefail
           START="$IN_START"
           END="$IN_END"
+          # Sem datas (execucao agendada): pega os ultimos 3 dias ate hoje.
           if [ -z "$START" ]; then START=$(date -u -d '3 days ago' +%F); fi
           if [ -z "$END" ]; then END=$(date -u +%F); fi
           FLAGS=""

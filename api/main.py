@@ -1,7 +1,7 @@
 """
 API REST — Eles Votam Por Você (FastAPI)
 
-Espelha a lógica do TheyVoteForYou: pessoas, votações, políticas, partidos e
+Expõe pessoas, votações, políticas, partidos e
 "encontre seu representante". Documentação automática em /docs (Swagger) e
 /openapi.json.
 

@@ -1,0 +1,19 @@
+# Segredos / ambiente
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# SO / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Documentos de referencia do build — ficam locais, nao vao para o repo.
+theyvoteforyou-architecture-and-build-guide.md
+CATALOGO_POLITICAS.md
