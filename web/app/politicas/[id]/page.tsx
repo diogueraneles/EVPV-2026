@@ -56,17 +56,27 @@ async function getPolicy(id: number) {
   };
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   const { data } = await supabase
     .from("policy")
     .select("name")
-    .eq("id", Number(params.id))
+    .eq("id", Number(id))
     .maybeSingle();
   return { title: data?.name ?? "Tema" };
 }
 
-export default async function PolicyPage({ params }: { params: { id: string } }) {
-  const id = Number(params.id);
+export default async function PolicyPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id: idParam } = await params;
+  const id = Number(idParam);
   if (!Number.isFinite(id)) notFound();
   const { pol, parties, top, bottom, divs } = await getPolicy(id);
   if (!pol) notFound();

@@ -20,9 +20,16 @@ async function getParties(): Promise<string[]> {
 export default async function PessoasPage({
   searchParams,
 }: {
-  searchParams: { q?: string; house?: string; uf?: string; party?: string; page?: string };
+  searchParams: Promise<{
+    q?: string;
+    house?: string;
+    uf?: string;
+    party?: string;
+    page?: string;
+  }>;
 }) {
-  const page = Math.max(1, parseInt(searchParams.page ?? "1", 10) || 1);
+  const sp = await searchParams;
+  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
   const from = (page - 1) * PAGE_SIZE;
 
   let query = supabase
@@ -31,10 +38,10 @@ export default async function PessoasPage({
     .order("name")
     .range(from, from + PAGE_SIZE - 1);
 
-  if (searchParams.q) query = query.ilike("name", `%${searchParams.q}%`);
-  if (searchParams.house) query = query.eq("house", searchParams.house);
-  if (searchParams.uf) query = query.eq("uf", searchParams.uf);
-  if (searchParams.party) query = query.eq("party_sigla", searchParams.party);
+  if (sp.q) query = query.ilike("name", `%${sp.q}%`);
+  if (sp.house) query = query.eq("house", sp.house);
+  if (sp.uf) query = query.eq("uf", sp.uf);
+  if (sp.party) query = query.eq("party_sigla", sp.party);
 
   const [{ data, count }, parties] = await Promise.all([query, getParties()]);
   const people = (data ?? []) as PersonDir[];
@@ -43,10 +50,10 @@ export default async function PessoasPage({
 
   const qs = (p: number) => {
     const params = new URLSearchParams();
-    if (searchParams.q) params.set("q", searchParams.q);
-    if (searchParams.house) params.set("house", searchParams.house);
-    if (searchParams.uf) params.set("uf", searchParams.uf);
-    if (searchParams.party) params.set("party", searchParams.party);
+    if (sp.q) params.set("q", sp.q);
+    if (sp.house) params.set("house", sp.house);
+    if (sp.uf) params.set("uf", sp.uf);
+    if (sp.party) params.set("party", sp.party);
     params.set("page", String(p));
     return `/pessoas?${params.toString()}`;
   };

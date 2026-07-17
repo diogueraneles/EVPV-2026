@@ -22,8 +22,13 @@ async function getDivision(id: number) {
   return { div, votes: (votes ?? []) as DivisionVote[] };
 }
 
-export default async function DivisionPage({ params }: { params: { id: string } }) {
-  const id = Number(params.id);
+export default async function DivisionPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id: idParam } = await params;
+  const id = Number(idParam);
   if (!Number.isFinite(id)) notFound();
   const { div, votes } = await getDivision(id);
   if (!div) notFound();

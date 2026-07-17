@@ -28,17 +28,27 @@ async function getParty(id: number) {
   };
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   const { data } = await supabase
     .from("party")
     .select("sigla")
-    .eq("id", Number(params.id))
+    .eq("id", Number(id))
     .maybeSingle();
   return { title: data?.sigla ? `Partido ${data.sigla}` : "Partido" };
 }
 
-export default async function PartyPage({ params }: { params: { id: string } }) {
-  const id = Number(params.id);
+export default async function PartyPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id: idParam } = await params;
+  const id = Number(idParam);
   if (!Number.isFinite(id)) notFound();
   const { party, agr, members } = await getParty(id);
   if (!party) notFound();
