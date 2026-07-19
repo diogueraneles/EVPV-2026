@@ -77,6 +77,45 @@ JOIN (VALUES
 ) AS v(ext, stance, strength) ON TRUE
 JOIN division d ON d.house='camara' AND d.external_id = v.ext;
 
+-- ---------------------------------------------------------------------------
+--  Política: Mais investimento na educação
+--  (recursos E fortalecimento da educação pública; votar SIM = a favor)
+--
+--  Curada com o tema OFICIAL 46 ("Educação"), votações de mérito e divisivas.
+--  Inclui as duas casas. Deixado de fora de propósito:
+--    - turnos repetidos do MESMO projeto (PEC 24/2019 tem 10 votações; PLP
+--      163/2025 tem 9) — usar todos superponderaria uma medida só;
+--    - PNAE (leite/merenda) e Pronampe: classificados como educação, mas são
+--      alimentação escolar e microempresa;
+--    - ProUni (MPV 1075) e Internet Brasil (MPV 1077): direção não confirmável
+--      pela ementa ("aperfeiçoar a sistemática" é neutro);
+--    - PL 5230/2023 (Ensino Médio, votação 2399598-70): placar do texto NÃO bate
+--      com o registro de votos — vínculo suspeito, descartado.
+-- ---------------------------------------------------------------------------
+DELETE FROM policy WHERE name = 'Mais investimento na educação';
+WITH p AS (
+  INSERT INTO policy (name, description, provisional) VALUES (
+    'Mais investimento na educação',
+    'Mais recursos e fortalecimento da educação pública: FUNDEB permanente, exclusão da educação do teto de gastos/arcabouço fiscal, execução orçamentária obrigatória, assistência estudantil, Pé-de-Meia (permanência no ensino médio) e o Sistema Nacional de Educação. Votar SIM apoia a educação pública.',
+    false) RETURNING id
+)
+INSERT INTO policy_division (policy_id, division_id, stance, strength)
+SELECT p.id, d.id, v.stance, v.strength
+FROM p
+JOIN (VALUES
+  ('camara','2194899-125','for','strong'),  -- PEC 24/2019 - exclui educacao do teto
+  ('camara','2541109-45','for','strong'),   -- PLP 163/2025 - fora dos limites fiscais
+  ('camara','1198512-279','for','normal'),  -- PEC 15/2015 - FUNDEB permanente
+  ('camara','2208007-48','for','normal'),   -- PEC 96/2019
+  ('camara','2409076-34','for','normal'),   -- PLP 243/2023 - Pe-de-Meia (Camara)
+  ('camara','2465240-36','for','normal'),   -- PL 3118/2024 - assistencia estudantil
+  ('camara','2318217-77','for','normal'),   -- PLP 235/2019 - Sistema Nacional de Educacao
+  ('senado','7030','for','strong'),         -- PLP 163/2025 (Senado)
+  ('senado','6783','for','normal'),         -- PLP 243/2023 - Pe-de-Meia (Senado)
+  ('senado','6882','for','normal')          -- PLP 153/2024
+) AS v(house, ext, stance, strength) ON TRUE
+JOIN division d ON d.house=v.house AND d.external_id = v.ext;
+
 COMMIT;
 
 -- Após rodar: recalcule os scores com  python scoring/score.py
