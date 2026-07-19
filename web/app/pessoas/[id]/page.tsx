@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import ScoreBadge from "@/components/ScoreBadge";
+import PositionBar from "@/components/PositionBar";
 import { HOUSE_LABEL, VOTE_LABEL, fmtDate, pct } from "@/lib/format";
 import type { PersonDir, PersonStats, ScoreNamed, PersonVote } from "@/lib/types";
 
@@ -122,10 +122,9 @@ export default async function PersonPage({
                 className="flex items-center justify-between gap-4 p-4 hover:bg-slate-50"
               >
                 <span className="font-medium text-slate-700">{s.policy_name}</span>
-                <ScoreBadge
+                <PositionBar
                   score={s.category === "not_enough" ? null : s.score}
                   category={s.category}
-                  small
                 />
               </Link>
             ))}

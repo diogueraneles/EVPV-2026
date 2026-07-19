@@ -49,8 +49,11 @@ export default function MetodologiaPage() {
       <section className="space-y-2">
         <h2 className="text-lg font-semibold text-slate-800">4. A posição final</h2>
         <p className="text-slate-600">
-          O resultado é um número de 0% a 100%: quanto maior, mais o parlamentar
-          apoiou o tema. Traduzimos esse número em faixas para facilitar a
+          O resultado é um número de 0% a 100% que mede o{" "}
+          <strong>apoio ao tema</strong>: 0 significa votar sempre contra a
+          direção do tema; 100, sempre a favor. Atenção: não é a fração de vezes
+          em que a pessoa votou &quot;sim&quot;, e sim o quanto ela apoia a posição
+          descrita no tema. Traduzimos esse número em faixas para facilitar a
           leitura:
         </p>
         <ul className="list-disc space-y-1 pl-6 text-slate-600">
