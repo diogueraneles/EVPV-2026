@@ -34,21 +34,23 @@ export default async function Home() {
 
   return (
     <div className="space-y-12">
-      <section className="-mx-4 -mt-8 bg-brand px-4 py-14 text-center text-white">
-        <h1 className="mx-auto max-w-3xl text-3xl font-bold sm:text-4xl">
-          Como seu deputado e senador votam de verdade?
-        </h1>
-        <p className="mx-auto mt-3 max-w-2xl text-white/85">
-          O que dizem na campanha nem sempre é como votam no Congresso. Aqui você
-          acompanha o voto de cada parlamentar, tema a tema, com dados públicos.
-        </p>
-        <div className="mt-6">
-          <HomeSearch />
+      <section className="relative left-1/2 -mt-8 w-screen -translate-x-1/2 bg-brand text-white">
+        <div className="mx-auto max-w-6xl px-4 py-16 text-center">
+          <h1 className="mx-auto max-w-3xl text-4xl font-bold sm:text-5xl">
+            Como seu deputado e senador votam de verdade?
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-white/85">
+            Esqueça o que dizem na campanha. O que importa é o voto — e aqui você
+            acompanha, tema a tema, como cada parlamentar vota no Congresso.
+          </p>
+          <div className="mt-6">
+            <HomeSearch />
+          </div>
+          <p className="mt-4 text-sm text-white/70">
+            {people.toLocaleString("pt-BR")} parlamentares ·{" "}
+            {divisions.toLocaleString("pt-BR")} votações analisadas
+          </p>
         </div>
-        <p className="mt-4 text-sm text-white/70">
-          {people.toLocaleString("pt-BR")} parlamentares ·{" "}
-          {divisions.toLocaleString("pt-BR")} votações analisadas
-        </p>
       </section>
 
       <section>

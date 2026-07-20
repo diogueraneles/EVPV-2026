@@ -22,7 +22,7 @@ export default function HomeSearch() {
       />
       <button
         type="submit"
-        className="rounded-lg bg-brand-dark px-5 py-3 font-medium text-white hover:bg-black/30"
+        className="rounded-lg bg-white px-5 py-3 font-semibold text-brand hover:bg-white/90"
       >
         Buscar
       </button>

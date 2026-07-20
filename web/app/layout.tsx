@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className="flex min-h-screen flex-col">
+      <body className="flex min-h-screen flex-col overflow-x-clip">
         <Navbar />
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
           {children}

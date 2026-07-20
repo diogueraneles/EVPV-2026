@@ -77,7 +77,7 @@ export default async function PersonPage({
       </Link>
 
       {/* Cabeçalho */}
-      <div className="flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-6 sm:flex-row sm:items-center">
+      <div className="sticky top-4 z-20 flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:items-center">
         <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full bg-slate-100">
           {dir.photo_url ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -90,6 +90,7 @@ export default async function PersonPage({
         </div>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-slate-800">{dir.name}</h1>
+          <div className="mt-1.5 space-y-1.5">
           <p className="text-slate-500">
             {dir.party_sigla ?? "sem partido"}
             {dir.uf ? ` · ${dir.uf}` : ""} · {CARGO_LABEL[dir.house]}
@@ -100,7 +101,7 @@ export default async function PersonPage({
             </p>
           )}
           {partPct !== null && (
-            <p className="mt-2.5 text-sm text-slate-600">
+            <p className="text-sm text-slate-600">
               Participou de{" "}
               <span className="group relative inline-block cursor-default border-b border-dashed border-slate-400">
                 <strong className="text-slate-800">{partPct}%</strong> das votações
@@ -111,6 +112,7 @@ export default async function PersonPage({
               </span>
             </p>
           )}
+          </div>
         </div>
       </div>
 
