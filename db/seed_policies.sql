@@ -125,14 +125,15 @@ DELETE FROM policy WHERE name = 'Direitos dos povos indígenas';
 WITH p AS (
   INSERT INTO policy (name, description, provisional) VALUES (
     'Direitos dos povos indígenas',
-    'Defesa dos direitos territoriais dos povos indígenas: CONTRA o Marco Temporal (PL 490/2007, que restringe a demarcação de terras às ocupadas em 5/10/1988). Score alto = defende os direitos indígenas. Política provisória: por ora reflete as votações do Marco Temporal e crescerá com novas votações.',
+    'Defesa dos direitos territoriais dos povos indígenas: CONTRA o Marco Temporal (PL 490/2007, que restringe a demarcação de terras às ocupadas em 5/10/1988). Score alto = defende os direitos indígenas. Inclui também o PL 4497/2024 (registros imobiliários sobrepostos a terras indígenas em demarcação, vetado).',
     true) RETURNING id
 )
 INSERT INTO policy_division (policy_id, division_id, stance, strength)
 SELECT p.id, d.id, v.stance, v.strength FROM p
 JOIN (VALUES
   ('345311-270','against','strong'),
-  ('345311-279','against','normal')
+  ('345311-279','against','normal'),
+  ('2471177-56','against','normal')
 ) AS v(ext, stance, strength) ON TRUE
 JOIN division d ON d.house='camara' AND d.external_id = v.ext;
 
@@ -232,6 +233,62 @@ SELECT p.id, d.id, v.stance, v.strength FROM p
 JOIN (VALUES
   ('2483495-52','for','strong'),   -- PL 363/2025 Aldir Blanc permanente
   ('2157806-137','for','normal')   -- PL 8889/2017 lei do streaming (CAvD)
+) AS v(ext, stance, strength) ON TRUE
+JOIN division d ON d.house='camara' AND d.external_id = v.ext;
+
+-- ---------------------------------------------------------------------------
+--  Reforma agrária e acesso à terra
+-- ---------------------------------------------------------------------------
+DELETE FROM policy WHERE name = 'Reforma agrária e acesso à terra';
+WITH p AS (
+  INSERT INTO policy (name, description, provisional) VALUES (
+    'Reforma agrária e acesso à terra',
+    'Defesa da reforma agrária e do acesso à terra: CONTRA a proibição de desapropriar terras produtivas (PL 4357/2023), CONTRA a regularização de registros sobre terras públicas em faixa de fronteira, inclusive sobrepostos a terras indígenas em demarcação (PL 4497/2024, o "PL da Grilagem", vetado), e CONTRA a punição de famílias que ocupam terras (PL 709/2023). Score alto = defende a reforma agrária.',
+    false) RETURNING id
+)
+INSERT INTO policy_division (policy_id, division_id, stance, strength)
+SELECT p.id, d.id, v.stance, v.strength FROM p
+JOIN (VALUES
+  ('2386051-93','against','strong'),  -- PL 4357/2023 proibe desapropriar terra produtiva
+  ('2471177-56','against','strong'),  -- PL 4497/2024 "PL da Grilagem" (vetado)
+  ('2349493-82','against','normal')   -- PL 709/2023 pune ocupacoes
+) AS v(ext, stance, strength) ON TRUE
+JOIN division d ON d.house='camara' AND d.external_id = v.ext;
+
+-- ---------------------------------------------------------------------------
+--  Blindagem de parlamentares (PEC da Blindagem) — política de um projeto só
+-- ---------------------------------------------------------------------------
+DELETE FROM policy WHERE name = 'Blindagem de parlamentares (PEC da Blindagem)';
+WITH p AS (
+  INSERT INTO policy (name, description, provisional) VALUES (
+    'Blindagem de parlamentares (PEC da Blindagem)',
+    'Posição sobre a PEC 3/2021 ("PEC da Blindagem"): exige autorização prévia da própria Casa Legislativa para o STF processar criminalmente parlamentares, com votação secreta. Aprovada pela Câmara em setembro de 2025; após protestos em todo o país, foi rejeitada pelo Senado. Score alto = a favor da blindagem.',
+    false) RETURNING id
+)
+INSERT INTO policy_division (policy_id, division_id, stance, strength)
+SELECT p.id, d.id, v.stance, v.strength FROM p
+JOIN (VALUES
+  ('2270800-135','for','strong'),  -- 1º turno (353x134)
+  ('2270800-160','for','normal'),  -- 2º turno (344x133)
+  ('2270800-175','for','normal')   -- emenda do voto secreto (314x168)
+) AS v(ext, stance, strength) ON TRUE
+JOIN division d ON d.house='camara' AND d.external_id = v.ext;
+
+-- ---------------------------------------------------------------------------
+--  Imunidade tributária das igrejas (PEC 5/2023) — política de um projeto só
+-- ---------------------------------------------------------------------------
+DELETE FROM policy WHERE name = 'Imunidade tributária das igrejas';
+WITH p AS (
+  INSERT INTO policy (name, description, provisional) VALUES (
+    'Imunidade tributária das igrejas',
+    'Posição sobre a PEC 5/2023: amplia a imunidade tributária de templos e entidades religiosas para a aquisição de bens e serviços necessários às suas atividades. Aprovada pela Câmara em dois turnos em maio de 2026. Score alto = a favor da ampliação da imunidade.',
+    false) RETURNING id
+)
+INSERT INTO policy_division (policy_id, division_id, stance, strength)
+SELECT p.id, d.id, v.stance, v.strength FROM p
+JOIN (VALUES
+  ('2351506-104','for','strong'),  -- 1º turno (385x93)
+  ('2351506-122','for','normal')   -- 2º turno (368x96)
 ) AS v(ext, stance, strength) ON TRUE
 JOIN division d ON d.house='camara' AND d.external_id = v.ext;
 
