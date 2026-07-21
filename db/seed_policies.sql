@@ -125,17 +125,20 @@ DELETE FROM policy WHERE name = 'Direitos dos povos indígenas';
 WITH p AS (
   INSERT INTO policy (name, description, provisional) VALUES (
     'Direitos dos povos indígenas',
-    'Defesa dos direitos territoriais dos povos indígenas: CONTRA o Marco Temporal (PL 490/2007, que restringe a demarcação de terras às ocupadas em 5/10/1988). Score alto = defende os direitos indígenas. Inclui também o PL 4497/2024 (registros imobiliários sobrepostos a terras indígenas em demarcação, vetado).',
+    'Defesa dos direitos territoriais dos povos indígenas: CONTRA o Marco Temporal (PL 490/2007, que restringe a demarcação de terras às ocupadas em 5/10/1988). Score alto = defende os direitos indígenas. Cobre as duas casas: PL 490/2007 (Câmara), PL 2903/2023 e PEC 48/2023 (Senado) e PL 4497/2024 (registros sobre terras em demarcação, vetado).',
     true) RETURNING id
 )
 INSERT INTO policy_division (policy_id, division_id, stance, strength)
 SELECT p.id, d.id, v.stance, v.strength FROM p
 JOIN (VALUES
-  ('345311-270','against','strong'),
-  ('345311-279','against','normal'),
-  ('2471177-56','against','normal')
-) AS v(ext, stance, strength) ON TRUE
-JOIN division d ON d.house='camara' AND d.external_id = v.ext;
+  ('camara','345311-270','against','strong'),  -- PL 490/2007 Marco Temporal (Câmara)
+  ('camara','345311-279','against','normal'),  -- PL 490/2007 destaque
+  ('camara','2471177-56','against','normal'),  -- PL 4497/2024 registros s/ demarcação
+  ('senado','6756','against','strong'),        -- PL 2903/2023 Marco Temporal (Senado, 43x21)
+  ('senado','7032','against','strong'),        -- PEC 48/2023 1º turno (52x14)
+  ('senado','7033','against','normal')         -- PEC 48/2023 2º turno (52x15)
+) AS v(house, ext, stance, strength) ON TRUE
+JOIN division d ON d.house=v.house AND d.external_id = v.ext;
 
 -- ---------------------------------------------------------------------------
 --  Igualdade racial
@@ -291,5 +294,61 @@ JOIN (VALUES
   ('2351506-122','for','normal')   -- 2º turno (368x96)
 ) AS v(ext, stance, strength) ON TRUE
 JOIN division d ON d.house='camara' AND d.external_id = v.ext;
+
+-- ---------------------------------------------------------------------------
+--  PL Antifacção (versão aprovada pela Câmara) — política de um projeto só
+-- ---------------------------------------------------------------------------
+DELETE FROM policy WHERE name = 'PL Antifacção (versão aprovada pela Câmara)';
+WITH p AS (
+  INSERT INTO policy (name, description, provisional) VALUES (
+    'PL Antifacção (versão aprovada pela Câmara)',
+    'Posição sobre o texto do PL Antifacção (PL 5582/2025) aprovado pela Câmara na versão do relator Guilherme Derrite: aumenta penas para organização criminosa e milícia, permite perdimento antecipado de bens e gravação de visitas a presos de facções. A base do governo votou contra, alegando que a versão enfraquece a Polícia Federal e o sufocamento financeiro das facções. Score alto = a favor do texto aprovado.',
+    false) RETURNING id
+)
+INSERT INTO policy_division (policy_id, division_id, stance, strength)
+SELECT p.id, d.id, v.stance, v.strength FROM p
+JOIN (VALUES
+  ('2579832-62','for','strong'),   -- aprovação do substitutivo (370x110)
+  ('2579832-96','for','normal')    -- texto mantido (298x109)
+) AS v(ext, stance, strength) ON TRUE
+JOIN division d ON d.house='camara' AND d.external_id = v.ext;
+
+-- ---------------------------------------------------------------------------
+--  Legalização dos jogos de azar (PL 442/1991)
+-- ---------------------------------------------------------------------------
+DELETE FROM policy WHERE name = 'Legalização dos jogos de azar';
+WITH p AS (
+  INSERT INTO policy (name, description, provisional) VALUES (
+    'Legalização dos jogos de azar',
+    'Posição sobre a legalização de cassinos, bingos e outros jogos de azar (PL 442/1991, o "marco dos jogos", aprovado pela Câmara em 2022 e parado no Senado). Score alto = a favor da legalização.',
+    false) RETURNING id
+)
+INSERT INTO policy_division (policy_id, division_id, stance, strength)
+SELECT p.id, d.id, v.stance, v.strength FROM p
+JOIN (VALUES
+  ('15460-165','for','strong'),   -- aprovação do substitutivo (246x202)
+  ('15460-179','for','normal')    -- texto mantido (234x175)
+) AS v(ext, stance, strength) ON TRUE
+JOIN division d ON d.house='camara' AND d.external_id = v.ext;
+
+-- ---------------------------------------------------------------------------
+--  Reforma tributária do consumo (PEC 45/2019 — as duas casas)
+-- ---------------------------------------------------------------------------
+DELETE FROM policy WHERE name = 'Reforma tributária do consumo';
+WITH p AS (
+  INSERT INTO policy (name, description, provisional) VALUES (
+    'Reforma tributária do consumo',
+    'Posição sobre a reforma tributária do consumo (PEC 45/2019, promulgada como Emenda Constitucional 132/2023): substitui PIS, Cofins, IPI, ICMS e ISS pelo IVA dual (CBS e IBS), com cashback para famílias de baixa renda e imposto seletivo. Inclui os votos da Câmara e do Senado. Score alto = a favor da reforma.',
+    false) RETURNING id
+)
+INSERT INTO policy_division (policy_id, division_id, stance, strength)
+SELECT p.id, d.id, v.stance, v.strength FROM p
+JOIN (VALUES
+  ('camara','2196833-326','for','strong'),  -- 1º turno Câmara (382x118)
+  ('camara','2196833-373','for','normal'),  -- 2º turno Câmara (375x113)
+  ('senado','6777','for','strong'),         -- PEC no Senado (53x24)
+  ('senado','6773','for','normal')          -- substitutivo no Senado (53x24)
+) AS v(house, ext, stance, strength) ON TRUE
+JOIN division d ON d.house=v.house AND d.external_id = v.ext;
 
 COMMIT;
