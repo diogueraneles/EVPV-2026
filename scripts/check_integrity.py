@@ -65,11 +65,11 @@ def main():
 
     # -- 2) votacoes nominais SEM votos (orfas) ------------------------------
     cur.execute("""
-        SELECT count(*) FILTER (WHERE em_pol IS NULL),
-               count(*) FILTER (WHERE em_pol IS NOT NULL)
+        SELECT count(*) FILTER (WHERE NOT em_pol),
+               count(*) FILTER (WHERE em_pol)
         FROM (
           SELECT d.id,
-                 (SELECT 1 FROM policy_division pd WHERE pd.division_id=d.id) AS em_pol
+                 EXISTS (SELECT 1 FROM policy_division pd WHERE pd.division_id=d.id) AS em_pol
           FROM division d
           WHERE d.is_nominal AND NOT EXISTS (SELECT 1 FROM vote v WHERE v.division_id=d.id)
         ) s""")
@@ -89,16 +89,16 @@ def main():
           NULLIF((regexp_match(d.description,'N[ãa]o:?\\s*([0-9]+)','i'))[1],'')::int AS nao_txt,
           count(*) FILTER (WHERE v.option='sim') AS sim_real,
           count(*) FILTER (WHERE v.option='nao') AS nao_real,
-          (SELECT 1 FROM policy_division pd WHERE pd.division_id=d.id) AS em_pol
+          EXISTS (SELECT 1 FROM policy_division pd WHERE pd.division_id=d.id) AS em_pol
         FROM division d LEFT JOIN vote v ON v.division_id=d.id
         WHERE d.is_nominal
         GROUP BY d.id, d.description
       )
       SELECT
-        count(*) FILTER (WHERE mm AND em_pol IS NULL)  AS mm_fora,
-        count(*) FILTER (WHERE mm AND em_pol IS NOT NULL) AS mm_pol,
-        count(*) FILTER (WHERE inv AND em_pol IS NULL) AS inv_fora,
-        count(*) FILTER (WHERE inv AND em_pol IS NOT NULL) AS inv_pol
+        count(*) FILTER (WHERE mm AND NOT em_pol)  AS mm_fora,
+        count(*) FILTER (WHERE mm AND em_pol) AS mm_pol,
+        count(*) FILTER (WHERE inv AND NOT em_pol) AS inv_fora,
+        count(*) FILTER (WHERE inv AND em_pol) AS inv_pol
       FROM (
         SELECT em_pol,
           (abs(sim_txt-sim_real)>%s OR abs(nao_txt-nao_real)>%s) AS mm,
