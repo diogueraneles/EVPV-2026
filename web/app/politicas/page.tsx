@@ -47,7 +47,7 @@ export default async function PoliticasPage() {
               )}
             </div>
             {pol.description && (
-              <p className="mt-2 text-sm text-slate-500">{pol.description}</p>
+              <p className="mt-2 text-base leading-relaxed text-slate-600">{pol.description}</p>
             )}
           </Link>
         ))}

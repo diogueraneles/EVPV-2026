@@ -13,3 +13,12 @@ body {
 a {
   @apply transition-colors;
 }
+
+/* Topo claro APENAS na home (a pagina que contem .home-hero) — decidido no servidor */
+body:has(.home-hero) .site-nav {
+  background-color: rgb(248 250 252);
+  border-bottom: 1px solid rgb(226 232 240);
+}
+body:has(.home-hero) .site-nav .nav-brand { color: rgb(27 73 101); }
+body:has(.home-hero) .site-nav .nav-link { color: rgb(71 85 105); }
+body:has(.home-hero) .site-nav .nav-link:hover { color: rgb(27 73 101); }

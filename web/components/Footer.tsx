@@ -14,6 +14,10 @@ export default function Footer() {
             Metodologia
           </Link>{" "}
           ·{" "}
+          <Link href="/faq" className="text-brand hover:underline">
+            FAQ
+          </Link>{" "}
+          ·{" "}
           <Link href="/sobre" className="text-brand hover:underline">
             Sobre e fontes
           </Link>

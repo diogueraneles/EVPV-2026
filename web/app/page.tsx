@@ -34,7 +34,7 @@ export default async function Home() {
 
   return (
     <div className="space-y-12">
-      <section className="relative left-1/2 -mt-8 w-screen -translate-x-1/2 bg-brand text-white">
+      <section className="home-hero relative left-1/2 -mt-8 w-screen -translate-x-1/2 bg-brand text-white">
         <div className="mx-auto max-w-6xl px-4 py-16 text-center">
           <h1 className="mx-auto max-w-3xl text-4xl font-bold sm:text-5xl">
             Como seu deputado e senador votam de verdade?

@@ -112,7 +112,7 @@ export default async function PersonPage({
             {scores.map((s) => (
               <Link
                 key={s.policy_id}
-                href={`/politicas/${s.policy_id}`}
+                href={`/politicas/${s.policy_id}?pessoa=${id}`}
                 className="block rounded-xl border border-slate-200 bg-white p-5 hover:border-brand-light hover:shadow-sm"
               >
                 <p className="mb-3.5 text-lg font-semibold text-slate-800">

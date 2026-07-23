@@ -2,8 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import ScoreBadge from "@/components/ScoreBadge";
-import { HOUSE_LABEL, fmtDate } from "@/lib/format";
-import type { Policy, PartyPolicyAgreement, ScoreNamed } from "@/lib/types";
+import PositionBar from "@/components/PositionBar";
+import PartyTable from "@/components/PartyTable";
+import { HOUSE_LABEL, VOTE_LABEL, fmtDate } from "@/lib/format";
+import type { Policy, PartyPolicyAgreement, ScoreNamed, PersonDir } from "@/lib/types";
 
 export const revalidate = 3600;
 
@@ -85,14 +87,44 @@ export async function generateMetadata({
 
 export default async function PolicyPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ pessoa?: string }>;
 }) {
   const { id: idParam } = await params;
+  const { pessoa } = await searchParams;
   const id = Number(idParam);
   if (!Number.isFinite(id)) notFound();
   const { pol, parties, top, bottom, divs } = await getPolicy(id);
   if (!pol) notFound();
+
+  // Se veio do perfil de um parlamentar, mostra como ELE votou nesta política
+  const personId = pessoa ? Number(pessoa) : null;
+  let person: PersonDir | null = null;
+  let personScore: ScoreNamed | null = null;
+  const personVotes: Record<number, string> = {};
+  if (personId && Number.isFinite(personId)) {
+    const divIds = divs.map((d) => d.division_id);
+    const [{ data: p }, { data: ps }, { data: pv }] = await Promise.all([
+      supabase.from("person_directory").select("*").eq("id", personId).maybeSingle(),
+      supabase
+        .from("score_named")
+        .select("*")
+        .eq("person_id", personId)
+        .eq("policy_id", id)
+        .maybeSingle(),
+      supabase
+        .from("person_vote")
+        .select("division_id, option")
+        .eq("person_id", personId)
+        .in("division_id", divIds),
+    ]);
+    person = (p as PersonDir | null) ?? null;
+    personScore = (ps as ScoreNamed | null) ?? null;
+    for (const v of pv ?? []) personVotes[v.division_id] = v.option;
+  }
+  const firstName = person?.name?.split(" ")[0] ?? null;
 
   return (
     <div className="space-y-8">
@@ -100,47 +132,52 @@ export default async function PolicyPage({
         ← Todas as políticas
       </Link>
 
-      <div>
+      {/* Cabeçalho fixo, em caixa (igual ao do parlamentar) */}
+      <div className="sticky top-4 z-20 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <h1 className="text-2xl font-bold text-slate-800">{pol.name}</h1>
         {pol.description && (
-          <p className="mt-2 max-w-3xl text-slate-600">{pol.description}</p>
+          <p className="mt-2 max-w-3xl text-lg leading-relaxed text-slate-600">
+            {pol.description}
+          </p>
         )}
       </div>
+
+      {/* Como este parlamentar vota nesta política */}
+      {person && (
+        <section className="rounded-xl border-2 border-brand-light bg-white p-5">
+          <div className="mb-3 flex items-center gap-3">
+            <span className="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-slate-100">
+              {person.photo_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={person.photo_url} alt={person.name} className="h-full w-full object-cover" />
+              ) : null}
+            </span>
+            <p className="text-lg font-semibold text-slate-800">
+              Como {person.name} vota nesta política
+            </p>
+          </div>
+          {personScore ? (
+            <PositionBar
+              score={personScore.category === "not_enough" ? null : personScore.score}
+              category={personScore.category}
+            />
+          ) : (
+            <p className="text-sm text-slate-500">
+              Sem votos suficientes nesta política.
+            </p>
+          )}
+          <p className="mt-3 text-xs text-slate-400">
+            Abaixo, em cada votação considerada, você vê o voto de {firstName}.
+          </p>
+        </section>
+      )}
 
       {/* Ranking por partido */}
       <section>
         <h2 className="mb-3 text-lg font-semibold text-slate-800">
           Posição por partido
         </h2>
-        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
-              <tr>
-                <th className="px-4 py-2">Partido</th>
-                <th className="px-4 py-2">Parlamentares</th>
-                <th className="px-4 py-2 text-right">Posição média</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {parties.map((p) => (
-                <tr key={p.party_id} className="hover:bg-slate-50">
-                  <td className="px-4 py-2">
-                    <Link
-                      href={`/partidos/${p.party_id}`}
-                      className="font-medium text-brand hover:underline"
-                    >
-                      {p.party_sigla}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2 text-slate-500">{p.n_people}</td>
-                  <td className="px-4 py-2 text-right">
-                    <ScoreBadge score={p.avg_score} category="" small />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <PartyTable parties={parties} />
       </section>
 
       {/* Mais a favor / mais contra */}
@@ -156,10 +193,7 @@ export default async function PolicyPage({
         </h2>
         <div className="divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white">
           {divs.map((d) => (
-            <div
-              key={d.division_id}
-              className="flex items-start justify-between gap-4 p-4"
-            >
+            <div key={d.division_id} className="flex items-start justify-between gap-4 p-4">
               <div className="min-w-0 flex-1">
                 {d.prop_sigla && (
                   <p className="text-sm font-semibold text-brand">
@@ -194,7 +228,15 @@ export default async function PolicyPage({
                   )}
                 </p>
               </div>
-              <StanceChip stance={d.stance} strength={d.strength} />
+              <div className="flex shrink-0 flex-col items-end gap-1.5">
+                <StanceChip stance={d.stance} strength={d.strength} />
+                {person && (
+                  <PersonVoteChip
+                    firstName={firstName!}
+                    option={personVotes[d.division_id] ?? "ausente"}
+                  />
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -214,13 +256,30 @@ function RankList({ title, rows }: { title: string; rows: ScoreNamed[] }) {
             href={`/pessoas/${r.person_id}`}
             className="flex items-center justify-between gap-3 p-3 hover:bg-slate-50"
           >
-            <span className="min-w-0">
-              <span className="block truncate text-sm font-medium text-slate-700">
-                {r.person_name}
+            <span className="flex min-w-0 items-center gap-3">
+              <span className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-slate-100">
+                {r.photo_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={r.photo_url}
+                    alt={r.person_name}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-sm text-slate-400">
+                    {r.person_name?.[0]}
+                  </span>
+                )}
               </span>
-              <span className="text-xs text-slate-400">
-                {r.party_sigla ?? "—"}
-                {r.uf ? ` · ${r.uf}` : ""}
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-medium text-slate-700">
+                  {r.person_name}
+                </span>
+                <span className="text-xs text-slate-400">
+                  {r.party_sigla ?? "—"}
+                  {r.uf ? ` · ${r.uf}` : ""}
+                </span>
               </span>
             </span>
             <ScoreBadge score={r.score} category={r.category} small />
@@ -245,6 +304,19 @@ function StanceChip({ stance, strength }: { stance: string; strength: string }) 
     >
       {forStance ? "Sim = a favor" : "Sim = contra"}
       {strength === "strong" ? " ★" : ""}
+    </span>
+  );
+}
+
+function PersonVoteChip({ firstName, option }: { firstName: string; option: string }) {
+  const map: Record<string, string> = {
+    sim: "bg-green-100 text-green-800",
+    nao: "bg-red-100 text-red-800",
+  };
+  const cls = map[option] ?? "bg-slate-100 text-slate-600";
+  return (
+    <span className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${cls}`}>
+      {firstName}: {VOTE_LABEL[option] ?? option}
     </span>
   );
 }
