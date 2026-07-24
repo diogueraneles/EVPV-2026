@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import ScoreBadge from "@/components/ScoreBadge";
 import PositionBar from "@/components/PositionBar";
 import PartyTable from "@/components/PartyTable";
-import { HOUSE_LABEL, VOTE_LABEL, fmtDate } from "@/lib/format";
+import { HOUSE_LABEL, VOTE_LABEL, categoryLabel, fmtDate } from "@/lib/format";
 import type { Policy, PartyPolicyAgreement, ScoreNamed, PersonDir } from "@/lib/types";
 
 export const revalidate = 3600;
@@ -153,7 +153,19 @@ export default async function PolicyPage({
               ) : null}
             </span>
             <p className="text-lg font-semibold text-slate-800">
-              Como {person.name} vota nesta política
+              {personScore && personScore.category !== "not_enough" ? (
+                <>
+                  {person.name} vota{" "}
+                  <span className="text-brand">
+                    &quot;{categoryLabel(personScore.category).toLowerCase()}&quot;
+                  </span>{" "}
+                  para &quot;{pol.name}&quot;
+                </>
+              ) : (
+                <>
+                  {person.name} em &quot;{pol.name}&quot;
+                </>
+              )}
             </p>
           </div>
           {personScore ? (
@@ -171,14 +183,6 @@ export default async function PolicyPage({
           </p>
         </section>
       )}
-
-      {/* Ranking por partido */}
-      <section>
-        <h2 className="mb-3 text-lg font-semibold text-slate-800">
-          Posição por partido
-        </h2>
-        <PartyTable parties={parties} />
-      </section>
 
       {/* Mais a favor / mais contra */}
       <section className="grid gap-6 lg:grid-cols-2">
@@ -241,6 +245,14 @@ export default async function PolicyPage({
           ))}
         </div>
       </section>
+
+      {/* Ranking por partido */}
+      <section>
+        <h2 className="mb-3 text-lg font-semibold text-slate-800">
+          Posição por partido
+        </h2>
+        <PartyTable parties={parties} />
+      </section>
     </div>
   );
 }
@@ -277,7 +289,7 @@ function RankList({ title, rows }: { title: string; rows: ScoreNamed[] }) {
                   {r.person_name}
                 </span>
                 <span className="text-xs text-slate-400">
-                  {r.party_sigla ?? "—"}
+                  {r.party_sigla ?? "-"}
                   {r.uf ? ` · ${r.uf}` : ""}
                 </span>
               </span>

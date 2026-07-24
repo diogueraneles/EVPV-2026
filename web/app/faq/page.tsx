@@ -1,8 +1,6 @@
 import Link from "next/link";
 
-export const metadata = { title: "FAQ — Perguntas frequentes" };
-
-const faqs: { q: string; a: React.ReactNode }[] = [];
+export const metadata = { title: "Perguntas frequentes" };
 
 export default function FaqPage() {
   return (
@@ -22,8 +20,8 @@ export default function FaqPage() {
           A Câmara dos Deputados e o Senado Federal publicam os dados de cada
           votação em seus portais de Dados Abertos. Nós coletamos esses registros
           todos os dias, organizamos as votações e as agrupamos em{" "}
-          <Link href="/politicas" className="text-brand hover:underline">políticas</Link>{" "}
-          — conjuntos de votações que, juntas, indicam uma posição sobre um
+          <Link href="/politicas" className="text-brand hover:underline">políticas</Link>:
+          conjuntos de votações que, juntas, indicam uma posição sobre um
           assunto. A partir daí, calculamos o quanto cada parlamentar apoia ou
           rejeita cada política.
         </p>
@@ -58,7 +56,7 @@ export default function FaqPage() {
           Por que nem toda decisão do Congresso aparece aqui?
         </h2>
         <p className="text-slate-600">
-          Porque a maioria das decisões é tomada por votação simbólica — e nelas
+          Porque a maioria das decisões é tomada por votação simbólica, e nelas
           não existe registro individual de voto. Só podemos mostrar como cada
           parlamentar votou quando a votação foi nominal. Muitas pautas
           importantes passam sem voto nominal, e por isso não geram score.
@@ -72,7 +70,7 @@ export default function FaqPage() {
         <p className="text-slate-600">
           Uma política é um conjunto de votações sobre o mesmo assunto, com uma
           direção clara (ex.: &quot;Mais investimento na educação&quot;). Para
-          cada votação incluída, definimos qual voto representa apoio — em
+          cada votação incluída, definimos qual voto representa apoio: em
           algumas, votar SIM apoia a política; em outras (como flexibilizar uma
           proteção), votar NÃO é que apoia. Votações decisivas têm peso maior
           (marcadas com ★). Cada página de política lista todas as votações
@@ -85,11 +83,12 @@ export default function FaqPage() {
           Quem decide se um parlamentar apoia uma política?
         </h2>
         <p className="text-slate-600">
-          Ninguém — os votos decidem. Não importa o que o parlamentar diz em
-          discurso ou campanha: o score é calculado apenas a partir de como ele
-          votou nas votações da política. A curadoria humana está em escolher
-          quais votações entram e qual é a direção de cada uma — e isso fica
-          sempre visível e auditável na página da política.
+          Ninguém: os votos decidem. Não importa o que o parlamentar diz em
+          discurso ou campanha, o score é calculado apenas a partir de como ele
+          votou nas votações da política. Nosso trabalho editorial se limita a
+          escolher quais votações entram e qual voto conta como apoio. Essas
+          escolhas ficam sempre publicadas na página da política, abertas para
+          qualquer pessoa conferir.
         </p>
       </section>
 
@@ -111,7 +110,7 @@ export default function FaqPage() {
           E se o parlamentar faltou às votações?
         </h2>
         <p className="text-slate-600">
-          Faltas pesam pouco no score, para não punir ausências pontuais — e quem
+          Faltas pesam pouco no score, para não punir ausências pontuais. Quem
           tem pouquíssimos votos numa política aparece como &quot;sem votos
           suficientes&quot;, sem posição atribuída. Não conseguimos distinguir
           quem faltou por doença, missão oficial ou por escolha: o registro
@@ -125,8 +124,8 @@ export default function FaqPage() {
         </h2>
         <p className="text-slate-600">
           Porque o plenário não votou esses temas nominalmente no período que
-          cobrimos. Vários marcos recentes — casamento igualitário,
-          criminalização da homofobia — vieram de decisões do STF, não de
+          cobrimos. Vários marcos recentes, como o casamento igualitário e a
+          criminalização da homofobia, vieram de decisões do STF, não de
           votações no Congresso. Quando houver votação nominal, a política é
           criada.
         </p>
@@ -138,7 +137,7 @@ export default function FaqPage() {
         </h2>
         <p className="text-slate-600">
           Cada votação no site traz data, casa, placar e o link &quot;Ler o
-          projeto na íntegra&quot; para a página oficial da Câmara ou do Senado —
+          projeto na íntegra&quot; para a página oficial da Câmara ou do Senado,
           onde você confere o registro original, voto a voto. Encontrou
           divergência? Fale conosco em{" "}
           <a href="mailto:contato@elesvotamporvoce.org" className="text-brand hover:underline">
@@ -155,13 +154,9 @@ export default function FaqPage() {
         <p className="text-slate-600">
           O Eles Votam por Você é um projeto independente e sem fins lucrativos,
           sem vínculo com partidos, campanhas ou com o próprio Congresso. As
-          políticas cobrem o espectro inteiro — em algumas quem pontua alto é a
-          esquerda, em outras é a direita — porque o objetivo é mostrar o voto,
-          não julgá-lo. Inspiração:{" "}
-          <a href="https://theyvoteforyou.org.au" target="_blank" rel="noreferrer" className="text-brand hover:underline">
-            They Vote For You
-          </a>{" "}
-          (Austrália).
+          políticas cobrem o espectro inteiro: em algumas quem pontua alto é a
+          esquerda, em outras é a direita, porque o objetivo é mostrar o voto,
+          não julgá-lo.
         </p>
       </section>
     </article>

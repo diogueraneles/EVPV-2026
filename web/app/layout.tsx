@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: {
-    default: "Eles Votam por Você — como seu deputado e senador votam",
+    default: "Eles Votam por Você: como seu deputado e senador votam",
     template: "%s · Eles Votam por Você",
   },
   description:

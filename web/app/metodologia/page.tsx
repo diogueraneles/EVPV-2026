@@ -18,7 +18,7 @@ export default function MetodologiaPage() {
         <p className="text-slate-600">
           Uma política reúne votações relacionadas a um assunto (por exemplo, proteção
           ao meio ambiente). Para cada votação incluída, definimos qual voto
-          representa apoio à política — em umas, votar <strong>Sim</strong> é a favor;
+          representa apoio à política: em umas, votar <strong>Sim</strong> é a favor;
           em outras (como flexibilizar uma regra), votar <strong>Não</strong> é
           que representa apoio. Essa direção é definida no momento da curadoria e
           fica registrada.
@@ -68,7 +68,7 @@ export default function MetodologiaPage() {
       <section className="space-y-2">
         <h2 className="text-lg font-semibold text-slate-800">Limites e cuidados</h2>
         <p className="text-slate-600">
-          Uma votação nem sempre reflete a posição completa de alguém — há acordos,
+          Uma votação nem sempre reflete a posição completa de alguém. Há acordos,
           textos combinados e votos táticos. Por isso, mostramos sempre as votações
           que compõem cada política, para você conferir o contexto. Esta é uma
           ferramenta de transparência, não um julgamento.

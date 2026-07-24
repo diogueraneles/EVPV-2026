@@ -18,7 +18,7 @@ export default function Navbar() {
         >
           <span className="text-lg">Eles Votam por Você</span>
         </Link>
-        <nav className="flex flex-wrap items-center gap-x-5 gap-y-1 text-lg font-semibold">
+        <nav className="flex flex-wrap items-center gap-x-5 gap-y-1 text-[15px] font-semibold">
           {links.map((l) => (
             <Link key={l.href} href={l.href} className="nav-link text-white/80 hover:text-white">
               {l.label}

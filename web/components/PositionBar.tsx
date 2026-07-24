@@ -29,7 +29,7 @@ export default function PositionBar({
           >
             <span className="absolute left-1/2 top-1/2 h-3 w-px -translate-y-1/2 bg-slate-300" />
             <span
-              className="absolute top-1/2 h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow"
+              className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow"
               style={{ left: `${pos}%`, background: color }}
             />
             <span

@@ -42,7 +42,7 @@ export default async function DivisionPage({
   const byParty: Record<string, Record<string, number>> = {};
   for (const v of votes) {
     counts[v.option] = (counts[v.option] ?? 0) + 1;
-    const p = v.party_sigla ?? "—";
+    const p = v.party_sigla ?? "-";
     byParty[p] = byParty[p] ?? {};
     byParty[p][v.option] = (byParty[p][v.option] ?? 0) + 1;
   }
@@ -148,7 +148,7 @@ export default async function DivisionPage({
               <span className="min-w-0 truncate">
                 <span className="text-slate-700">{v.name}</span>{" "}
                 <span className="text-xs text-slate-400">
-                  {v.party_sigla ?? "—"}
+                  {v.party_sigla ?? "-"}
                   {v.uf ? `/${v.uf}` : ""}
                 </span>
               </span>
