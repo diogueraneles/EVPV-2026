@@ -9,9 +9,10 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: "#1b4965",
-          dark: "#0f2e42",
-          light: "#5fa8d3",
+          DEFAULT: "#6d28d9",
+          dark: "#4c1d95",
+          light: "#a78bfa",
+          ink: "#16141f",
         },
       },
     },

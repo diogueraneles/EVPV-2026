@@ -36,7 +36,7 @@ export default function PositionBar({
             <span className="absolute left-1/2 top-1/2 h-3.5 w-px -translate-y-1/2 bg-slate-300" />
             <span
               aria-hidden
-              className="absolute -top-4 -translate-x-1/2"
+              className="animate-marker absolute -top-4 -translate-x-1/2"
               style={{ left: `${dispPos}%` }}
             >
               <span
@@ -46,7 +46,7 @@ export default function PositionBar({
             </span>
             <span
               aria-hidden
-              className="absolute top-0 h-full w-[2px] -translate-x-1/2"
+              className="animate-marker absolute top-0 h-full w-[2px] -translate-x-1/2"
               style={{ left: `${dispPos}%`, background: color }}
             />
             <span

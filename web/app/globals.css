@@ -16,9 +16,15 @@ a {
 
 /* Topo claro APENAS na home (a pagina que contem .home-hero) — decidido no servidor */
 body:has(.home-hero) .site-nav {
-  background-color: rgb(248 250 252);
-  border-bottom: 1px solid rgb(226 232 240);
+  background-color: #fafaf9;
+  border-bottom: 1px solid #e7e5e4;
 }
-body:has(.home-hero) .site-nav .nav-brand { color: rgb(27 73 101); }
-body:has(.home-hero) .site-nav .nav-link { color: rgb(71 85 105); }
-body:has(.home-hero) .site-nav .nav-link:hover { color: rgb(27 73 101); }
+body:has(.home-hero) .site-nav .nav-brand { color: #16141f; }
+body:has(.home-hero) .site-nav .nav-link { color: #57534e; }
+body:has(.home-hero) .site-nav .nav-link:hover { color: #6d28d9; }
+
+/* micro-interacoes */
+@keyframes growBar { from { width: 0; } to { width: var(--w); } }
+.animate-grow { width: var(--w); animation: growBar 1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes slideMarker { from { left: 50%; opacity: 0.3; } }
+.animate-marker { animation: slideMarker 0.7s ease-out both; }
