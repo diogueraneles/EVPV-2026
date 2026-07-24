@@ -40,7 +40,7 @@ export default async function PoliticasPage() {
           <Link
             key={pol.id}
             href={`/politicas/${pol.id}`}
-            className="rounded-lg border border-slate-200 bg-white p-5 hover:border-brand-light hover:shadow-sm"
+            className="rounded-lg border border-brand-light bg-white p-5 hover:border-brand hover:shadow-sm"
           >
             <div className="flex items-center gap-2">
               <p className="font-semibold text-slate-800">{pol.name}</p>

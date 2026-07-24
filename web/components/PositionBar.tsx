@@ -13,7 +13,7 @@ export default function PositionBar({
 }) {
   const enough = category !== "not_enough" && score !== null;
   const pos = enough ? Math.max(0, Math.min(100, score as number)) : 50;
-  const dispPos = Math.max(3, Math.min(97, pos));
+  const dispPos = pos <= 3 ? 1.5 : pos >= 97 ? 98.5 : pos;
   const color = enough ? scoreColor(score) : "#94a3b8";
   return (
     <div className="group relative w-full">
@@ -31,17 +31,9 @@ export default function PositionBar({
             className="relative mt-[18px] h-[11px] rounded-full"
             style={{
               background:
-                "linear-gradient(to right,#fecaca 0%,#fde68a 50%,#bbf7d0 100%)",
+                "linear-gradient(to right,#dc2626 0%,#f87171 8%,#fecaca 22%,#fde68a 50%,#bbf7d0 78%,#34d399 92%,#16a34a 100%)",
             }}
           >
-            <span
-              className="absolute left-0 top-0 h-full w-[3%] rounded-l-full"
-              style={{ background: "#dc2626" }}
-            />
-            <span
-              className="absolute right-0 top-0 h-full w-[3%] rounded-r-full"
-              style={{ background: "#16a34a" }}
-            />
             {TICKS.map((t) => (
               <span
                 key={t}

@@ -185,8 +185,10 @@ export default async function PolicyPage({
         </section>
       )}
 
+      <h1 className="text-3xl font-bold leading-tight text-slate-800">{pol.name}</h1>
+
       {pol.impact && (
-        <div className="rounded-none border-l-4 border-amber-400 bg-amber-50 p-5">
+        <div className="rounded-none border-l-4 border-amber-500 bg-amber-100 p-5">
           <p className="font-semibold text-amber-900">Por que isso importa para você?</p>
           <p className="mt-1.5 text-[15px] leading-relaxed text-amber-900/90">
             {pol.impact}
@@ -196,7 +198,7 @@ export default async function PolicyPage({
 
       {/* Cabeçalho fixo, em caixa (igual ao do parlamentar) */}
       <div className="rounded-lg border border-slate-200 bg-white p-6">
-        <h1 className="text-2xl font-bold text-slate-800">{pol.name}</h1>
+        <h2 className="text-lg font-semibold text-slate-800">Detalhes</h2>
         {pol.description && (
           <p className="mt-2 max-w-3xl text-lg leading-relaxed text-slate-600">
             {pol.description}
