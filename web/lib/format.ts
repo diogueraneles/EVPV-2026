@@ -77,3 +77,21 @@ export function featuredRank(name: string): number {
   const i = FEATURED_POLICIES.indexOf(name);
   return i === -1 ? 99 : i;
 }
+
+export function categoryFromScore(score: number | null): string {
+  if (score === null) return "not_enough";
+  if (score >= 95) return "for3";
+  if (score >= 85) return "for2";
+  if (score >= 60) return "for1";
+  if (score > 40) return "mixture";
+  if (score > 15) return "against1";
+  if (score > 5) return "against2";
+  return "against3";
+}
+
+// Percentual direcional: mostra o lado que faz sentido para o leitor
+export function supportTip(score: number | null): string | null {
+  if (score === null) return null;
+  const p = Math.round(score);
+  return p >= 50 ? `${p}% a favor da política` : `${100 - p}% contra a política`;
+}

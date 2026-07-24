@@ -39,6 +39,7 @@ export type Policy = {
   name: string;
   description: string | null;
   provisional: boolean;
+  impact: string | null;
 };
 
 export type PartyPolicyAgreement = {

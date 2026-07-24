@@ -7,6 +7,12 @@ const nextConfig = {
       { protocol: "https", hostname: "**.senado.gov.br" },
     ],
   },
+  async redirects() {
+    return [
+      { source: "/metodologia", destination: "/como-funciona", permanent: true },
+      { source: "/faq", destination: "/como-funciona", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -128,9 +128,19 @@ export default async function PolicyPage({
 
   return (
     <div className="space-y-8">
-      <Link href="/politicas" className="text-sm text-brand hover:underline">
-        ← Todas as políticas
-      </Link>
+      <p className="text-sm">
+        <Link href="/politicas" className="text-brand hover:underline">
+          ← Todas as políticas
+        </Link>
+        {person && (
+          <>
+            {" "}<span className="text-slate-400">/</span>{" "}
+            <Link href={`/pessoas/${person.id}`} className="text-brand hover:underline">
+              {person.name}
+            </Link>
+          </>
+        )}
+      </p>
 
       {/* Como este parlamentar vota nesta política */}
       {person && (
@@ -175,6 +185,15 @@ export default async function PolicyPage({
         </section>
       )}
 
+      {pol.impact && (
+        <div className="rounded-none border-l-4 border-amber-400 bg-amber-50 p-5">
+          <p className="font-semibold text-amber-900">Por que isso importa para você?</p>
+          <p className="mt-1.5 text-[15px] leading-relaxed text-amber-900/90">
+            {pol.impact}
+          </p>
+        </div>
+      )}
+
       {/* Cabeçalho fixo, em caixa (igual ao do parlamentar) */}
       <div className="rounded-lg border border-slate-200 bg-white p-6">
         <h1 className="text-2xl font-bold text-slate-800">{pol.name}</h1>
@@ -187,8 +206,8 @@ export default async function PolicyPage({
 
       {/* Mais a favor / mais contra */}
       <section className="grid gap-6 lg:grid-cols-2">
-        <RankList title="Mais a favor" rows={top} />
-        <RankList title="Mais contra" rows={bottom} />
+        <RankList title="Top 10 que mais votaram a favor" rows={top} />
+        <RankList title="Top 10 que mais votaram contra" rows={bottom} />
       </section>
 
       {/* Votações que compõem a política */}

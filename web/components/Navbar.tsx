@@ -4,8 +4,7 @@ import LogoMark from "./Logo";
 const links = [
   { href: "/pessoas", label: "Parlamentares" },
   { href: "/politicas", label: "Políticas" },
-  { href: "/metodologia", label: "Metodologia" },
-  { href: "/faq", label: "FAQ" },
+  { href: "/como-funciona", label: "Como funciona" },
   { href: "/sobre", label: "Sobre" },
 ];
 

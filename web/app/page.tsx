@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import HomeSearch from "@/components/HomeSearch";
 import BigNumbers from "@/components/BigNumbers";
 import { FEATURED_POLICIES, featuredRank, scoreColor } from "@/lib/format";
-import type { PartyPolicyAgreement, Policy } from "@/lib/types";
+import type { PartyPolicyAgreement, PersonDir, Policy } from "@/lib/types";
 
 export const revalidate = 3600;
 
@@ -47,14 +47,62 @@ async function getData() {
         return { policy, rows: picks };
       });
     }
-    return { policies: pols, trends, people: people ?? 0, divisions: divisions ?? 0 };
+    // Recordistas do plenário
+    type Rec = { label: string; value: string; person: PersonDir };
+    let recordistas: Rec[] = [];
+    const { data: partRows } = await supabase
+      .from("person_participation")
+      .select("person_id, n_votes, eligible");
+    const rows = (partRows ?? []) as { person_id: number; n_votes: number; eligible: number }[];
+    const qual = rows.filter((r) => r.eligible >= 200);
+    if (qual.length) {
+      const maisVotos = [...rows].sort((a, b) => b.n_votes - a.n_votes)[0];
+      const maisPresente = [...qual].sort(
+        (a, b) => b.n_votes / b.eligible - a.n_votes / a.eligible
+      )[0];
+      const maisAusente = [...qual].sort(
+        (a, b) => a.n_votes / a.eligible - b.n_votes / b.eligible
+      )[0];
+      const ids = [maisVotos.person_id, maisPresente.person_id, maisAusente.person_id];
+      const { data: ppl } = await supabase
+        .from("person_directory")
+        .select("*")
+        .in("id", ids);
+      const by = new Map(((ppl ?? []) as PersonDir[]).map((p) => [p.id, p]));
+      const pct = (r: { n_votes: number; eligible: number }) =>
+        Math.round((100 * r.n_votes) / r.eligible);
+      recordistas = [
+        {
+          label: "Quem mais votou",
+          value: maisVotos.n_votes.toLocaleString("pt-BR") + " votos",
+          person: by.get(maisVotos.person_id) as PersonDir,
+        },
+        {
+          label: "Maior presença nas votações",
+          value: pct(maisPresente) + "%",
+          person: by.get(maisPresente.person_id) as PersonDir,
+        },
+        {
+          label: "Maior ausência nas votações",
+          value: 100 - pct(maisAusente) + "%",
+          person: by.get(maisAusente.person_id) as PersonDir,
+        },
+      ].filter((r) => r.person);
+    }
+    return { policies: pols, trends, recordistas, people: people ?? 0, divisions: divisions ?? 0 };
   } catch {
-    return { policies: [] as Policy[], trends: [] as Trend[], people: 0, divisions: 0 };
+    return {
+      policies: [] as Policy[],
+      trends: [] as Trend[],
+      recordistas: [] as { label: string; value: string; person: PersonDir }[],
+      people: 0,
+      divisions: 0,
+    };
   }
 }
 
 export default async function Home() {
-  const { policies, trends, people, divisions } = await getData();
+  const { policies, trends, recordistas, people, divisions } = await getData();
 
   return (
     <div className="space-y-12">
@@ -130,17 +178,60 @@ export default async function Home() {
         </section>
       )}
 
+      {recordistas.length > 0 && (
+        <section>
+          <h2 className="mb-4 text-xl font-semibold text-slate-800">
+            Recordistas do plenário
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-3">
+            {recordistas.map((r) => (
+              <Link
+                key={r.label}
+                href={`/pessoas/${r.person.id}`}
+                className="rounded-xl border border-slate-200 bg-white p-5 text-center hover:border-brand-light hover:shadow-sm"
+              >
+                <p className="text-4xl font-bold leading-none text-slate-900">
+                  {r.value}
+                </p>
+                <p className="mt-2 text-xs uppercase tracking-wider text-slate-400">
+                  {r.label}
+                </p>
+                <span className="mt-4 flex items-center justify-center gap-2.5">
+                  <span className="h-9 w-9 shrink-0 overflow-hidden rounded-full bg-slate-100">
+                    {r.person.photo_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={r.person.photo_url}
+                        alt={r.person.name}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : null}
+                  </span>
+                  <span className="text-left">
+                    <span className="block text-sm font-medium text-slate-700">
+                      {r.person.name}
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      {r.person.party_sigla ?? ""}
+                      {r.person.uf ? ` · ${r.person.uf}` : ""}
+                    </span>
+                  </span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section>
         <div className="mb-4 flex items-end justify-between">
           <h2 className="text-xl font-semibold text-slate-800">
-            Todas as políticas
+            Principais políticas
           </h2>
-          <Link href="/politicas" className="text-sm text-brand hover:underline">
-            Ver página completa
-          </Link>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {policies.map((pol) => (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {policies.filter((p) => featuredRank(p.name) < 99).map((pol) => (
             <Link
               key={pol.id}
               href={`/politicas/${pol.id}`}
@@ -158,6 +249,14 @@ export default async function Home() {
         {policies.length === 0 && (
           <p className="text-sm text-slate-500">Nenhuma política publicada ainda.</p>
         )}
+        <div className="mt-6 text-center">
+          <Link
+            href="/politicas"
+            className="inline-block rounded-lg bg-brand px-6 py-3 font-medium text-white hover:bg-brand-dark"
+          >
+            Ver todas as {policies.length} políticas
+          </Link>
+        </div>
       </section>
 
       <section className="rounded-lg border border-slate-200 bg-white p-6">
@@ -181,7 +280,7 @@ export default async function Home() {
             <p className="font-medium text-slate-800">3. Calculamos a média</p>
             <p className="mt-1">
               Para cada parlamentar, o quanto ele apoia ou rejeita cada política.{" "}
-              <Link href="/metodologia" className="text-brand hover:underline">
+              <Link href="/como-funciona" className="text-brand hover:underline">
                 Ver metodologia
               </Link>
               .

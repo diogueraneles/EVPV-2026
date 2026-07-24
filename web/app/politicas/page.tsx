@@ -44,11 +44,6 @@ export default async function PoliticasPage() {
           >
             <div className="flex items-center gap-2">
               <p className="font-semibold text-slate-800">{pol.name}</p>
-              {featuredRank(pol.name) < 99 && (
-                <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-                  Destaque
-                </span>
-              )}
               {pol.provisional && (
                 <span className="rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-700">
                   provisório

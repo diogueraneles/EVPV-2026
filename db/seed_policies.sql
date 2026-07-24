@@ -334,3 +334,25 @@ JOIN (VALUES
 JOIN division d ON d.house=v.house AND d.external_id = v.ext;
 
 COMMIT;
+
+-- ============================================================================
+--  "Por que isso importa para você?" — texto prático por política (coluna impact)
+-- ============================================================================
+UPDATE policy SET impact = CASE name
+ WHEN 'Proteção das mulheres contra a violência' THEN 'Define o quanto o Estado protege mulheres da violência doméstica e do feminicídio: monitoramento de agressores, atendimento especializado nas delegacias e punição de quem agride. Afeta a segurança de mães, filhas e companheiras em todo o país.'
+ WHEN 'Igualdade de gênero no trabalho' THEN 'Decide se as empresas são obrigadas a pagar o mesmo salário a homens e mulheres na mesma função. Mexe direto no contracheque de milhões de trabalhadoras.'
+ WHEN 'Ação climática e conservação' THEN 'Influencia o preço e a origem da sua energia, a frequência das secas e enchentes que atingem cidades e alimentos, e o futuro das florestas e do mar que sustentam pesca e agricultura.'
+ WHEN 'Rigor no licenciamento ambiental' THEN 'O licenciamento é o filtro que avalia se uma obra ou fábrica pode poluir rios, ar e comunidades vizinhas. Flexibilizar acelera empreendimentos; manter o rigor protege quem vive perto deles.'
+ WHEN 'Mais investimento na educação' THEN 'Define quanto dinheiro chega à escola pública: salário de professor, merenda, vaga em creche e apoio para o aluno de baixa renda terminar o ensino médio. Impacto direto em quem estuda ou tem filhos na rede pública.'
+ WHEN 'Direitos dos povos indígenas' THEN 'Decide quem fica com terras em disputa: os povos indígenas que as ocupam tradicionalmente ou fazendeiros e empresas. Afeta os conflitos no campo, a preservação da floresta e o clima.'
+ WHEN 'Igualdade racial' THEN 'Define cotas em concursos públicos, punição para o racismo e financiamento de candidaturas negras. Mexe com oportunidades de emprego e com a representação política da maioria da população brasileira.'
+ WHEN 'Direitos dos trabalhadores' THEN 'Decide a sua jornada (fim da escala 6x1), o seu FGTS e os seus direitos na contratação. Impacto direto no tempo livre e no bolso de quem trabalha com carteira assinada.'
+ WHEN 'Anistia e redução de penas do 8 de Janeiro' THEN 'Decide se quem participou da invasão e depredação dos prédios dos Três Poderes cumpre a pena aplicada ou é perdoado. Define o precedente para futuros ataques às instituições.'
+ WHEN 'Endurecimento das penas' THEN 'Penas maiores e prisão mais longa para furto, roubo e porte ilegal de arma. Afeta a segurança pública, a superlotação dos presídios e o custo do sistema prisional, pago com o seu imposto.'
+ WHEN 'Financiamento à cultura' THEN 'Define se R$ 15 bilhões de dinheiro público financiam shows, cinema, teatro e pontos de cultura na sua cidade, e se o streaming contribui para o audiovisual nacional.'
+ WHEN 'Imunidade tributária das igrejas' THEN 'Igrejas deixariam de pagar impostos também sobre o que compram. De um lado, menos arrecadação para saúde e educação; do outro, mais recursos para os templos e suas obras sociais.'
+ WHEN 'Legalização dos jogos de azar' THEN 'Decide se cassinos e bingos voltam a funcionar legalmente no país: empregos e impostos de um lado; risco de vício em jogo e lavagem de dinheiro do outro.'
+ WHEN 'Blindagem de parlamentares (PEC da Blindagem)' THEN 'Exigia autorização dos próprios colegas, em voto secreto, para processar criminalmente um parlamentar. Na prática, tornaria mais difícil punir deputados por crimes, inclusive corrupção.'
+ WHEN 'Reforma agrária e acesso à terra' THEN 'Decide se terras improdutivas podem ser desapropriadas para assentar famílias sem terra e se ocupações de terras públicas viram propriedade privada. Afeta o preço dos alimentos e os conflitos no campo.'
+ WHEN 'Reforma tributária do consumo' THEN 'Muda os impostos de tudo o que você compra: unifica cinco tributos, devolve dinheiro (cashback) para famílias de baixa renda e taxa mais os produtos que fazem mal à saúde.'
+ ELSE impact END;

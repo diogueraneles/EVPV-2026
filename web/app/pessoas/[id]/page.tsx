@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import PositionBar from "@/components/PositionBar";
-import { CARGO_LABEL, HOUSE_LABEL, VOTE_LABEL, categoryLabel, fmtDate, scoreColor } from "@/lib/format";
+import { CARGO_LABEL, HOUSE_LABEL, VOTE_LABEL, categoryLabel, featuredRank, fmtDate, scoreColor } from "@/lib/format";
 import type { PersonDir, ScoreNamed, PersonVote, Participation } from "@/lib/types";
 
 export const revalidate = 3600;
@@ -61,6 +61,16 @@ export default async function PersonPage({
   const { dir, part, scores, votes } = await getPerson(id);
   if (!dir) notFound();
 
+  const sortedScores = [...scores].sort(
+    (a, b) =>
+      featuredRank(a.policy_name) - featuredRank(b.policy_name) ||
+      b.score - a.score
+  );
+  const presPct =
+    part && part.eligible > 0
+      ? Math.round((100 * part.n_votes) / part.eligible)
+      : null;
+
   const anoInicio = part?.first_vote
     ? new Date(part.first_vote).getFullYear()
     : null;
@@ -96,6 +106,13 @@ export default async function PersonPage({
               No cargo desde {anoInicio} ({anos} {anos === 1 ? "ano" : "anos"})
             </p>
           )}
+          {presPct !== null && presPct < 50 && (
+            <p className="mt-1 text-sm font-semibold text-red-700">
+              {presPct < 10
+                ? "Faltou a quase todas as votações do mandato"
+                : `Faltou à maioria das votações do mandato (${100 - presPct}% de ausência)`}
+            </p>
+          )}
           </div>
         </div>
       </div>
@@ -103,13 +120,13 @@ export default async function PersonPage({
       {/* Políticas */}
       <section>
         <h2 className="mb-3 text-lg font-semibold text-slate-800">Políticas</h2>
-        {scores.length === 0 ? (
+        {sortedScores.length === 0 ? (
           <p className="text-sm text-slate-500">
             Ainda não há políticas com votos suficientes para este parlamentar.
           </p>
         ) : (
           <div className="space-y-3">
-            {scores.map((s) => (
+            {sortedScores.map((s) => (
               <Link
                 key={s.policy_id}
                 href={`/politicas/${s.policy_id}?pessoa=${id}`}
@@ -123,6 +140,12 @@ export default async function PersonPage({
                       <span style={{ color: scoreColor(s.score) }}>
                         {categoryLabel(s.category)}
                       </span>
+                    </>
+                  )}
+                  {s.category === "not_enough" && (
+                    <>
+                      {" "}-{" "}
+                      <span className="text-slate-400">Sem votos suficientes</span>
                     </>
                   )}
                 </p>
